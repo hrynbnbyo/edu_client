@@ -15,7 +15,7 @@
                         <span><router-link to="/cart">购物车</router-link></span>
                     </div>
                     <div class="login-box full-left">
-                        <span>登录</span>
+                        <router-link to="/login"><span>登录</span></router-link>
                         &nbsp;|&nbsp;
                         <span>注册</span>
                     </div>
