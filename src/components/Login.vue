@@ -22,7 +22,7 @@
                         </p>
                         <p>忘记密码</p>
                     </div>
-                    <button class="login_btn btn btn-primary" @click="user_login">登录</button>
+                    <button class="login_btn btn btn-primary" @click="get_captcha">登录</button>
                     <p class="go_login">没有账号
                         <router-link to="/user/register/">立即注册</router-link>
                     </p>
@@ -45,7 +45,6 @@
         name: "Login",
         data(){
             return{
-                header_list:[],
                 username:'',
                 password:'',
                 token:'',

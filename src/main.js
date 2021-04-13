@@ -18,7 +18,7 @@ import "../static/css/global.css"
 import settings from "./settings";
 
 // 让自定义配置生效
-
+import "../static/js/gt"
 
 Vue.prototype.$settings = settings;
 

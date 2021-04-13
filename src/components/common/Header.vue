@@ -19,7 +19,7 @@
                     <div class="login-box full-left">
                        <span>订单</span>
                         &nbsp;|&nbsp;
-                        {{username}}，<span>退出登录</span>
+                        {{username}}，<span @click="clear_session">退出登录</span>
                     </div>
                 </div>
 
@@ -56,6 +56,9 @@ export default {
         this.username = sessionStorage.username
     },
     methods: {
+        clear_session(){
+            sessionStorage.clear()
+        },
         get_header_list() {
             this.$axios({
                 url: this.$settings.HOST + 'home/header/',
@@ -65,7 +68,7 @@ export default {
             }).catch(error => {
                 console.log(error);
             })
-        }
+        },
     }
 }
 </script>
