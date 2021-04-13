@@ -15,9 +15,10 @@ Vue.use(Element)
 Vue.config.productionTip = false
 
 import "../static/css/global.css"
+import settings from "./settings";
 
 // 让自定义配置生效
-import settings from "./settings";
+
 
 Vue.prototype.$settings = settings;
 

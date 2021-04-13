@@ -1,47 +1,149 @@
-<div class="login box">
-    <img src="../../static/image/03.png" alt="">
-    <div class="login">
-        <div class="login-title">
-            <img src="../../static/image/logo.png" alt="">
-            <p>百知教育给你最优质的学习体验!</p>
-        </div>
-        <div class="login_box">
-            <div class="title">
-                <span>密码登录</span>
-                <span>短信登录</span>
+<template>
+    <div class="login box">
+        <img src="../../static/image/03.png" alt="">
+        <div class="login">
+            <div class="login-title">
+                <img src="../../static/image/logo.png" alt="">
+                <p>百知教育给你最优质的学习体验!</p>
             </div>
-            <div class="inp" v-if="">
-                <input type="text" placeholder="用户名 / 手机号码" class="user">
-                <input type="password" name="" class="pwd" placeholder="密码">
-                <div id="geetest1"></div>
-                <div class="rember">
-                    <p>
-                        <input type="checkbox" class="no" />
-                        <span>记住密码</span>
-                    </p>
-                    <p>忘记密码</p>
+            <div class="login_box">
+                <div class="title">
+                    <span>密码登录</span>
+                    <span>短信登录</span>
                 </div>
-                <button class="login_btn btn btn-primary">登录</button>
-                <p class="go_login">没有账号
-                    <router-link to="/user/register/">立即注册</router-link>
-                </p>
-            </div>
-            <div class="inp" v-show="">
-                <input type="text" placeholder="手机号码" class="user">
-                <input type="text" class="pwd" placeholder="短信验证码">
-                <button id="get_code" class="btn btn-primary">获取验证码</button>
-                <button class="login_btn">登录</button>
-                <span class="go_login">没有账号
-                    <router-link to="/user/register/">立即注册</router-link>
-                </span>
+                <div class="inp" v-if="">
+                    <input type="text" v-model="username" placeholder="用户名 / 手机号码" class="user">
+                    <input type="password"  v-model="password" name="" class="pwd" placeholder="密码">
+                    <div id="geetest1"></div>
+                    <div class="rember" >
+                        <p>
+                            <input type="checkbox" class="no" v-model="rember"/>
+                            <span>记住密码</span>
+                        </p>
+                        <p>忘记密码</p>
+                    </div>
+                    <button class="login_btn btn btn-primary" @click="user_login">登录</button>
+                    <p class="go_login">没有账号
+                        <router-link to="/user/register/">立即注册</router-link>
+                    </p>
+                </div>
+                <div class="inp" v-show="">
+                    <input type="text" placeholder="手机号码" class="user">
+                    <input type="text" class="pwd" placeholder="短信验证码">
+                    <button id="get_code" class="btn btn-primary">获取验证码</button>
+                    <button class="login_btn">登录</button>
+                    <span class="go_login">没有账号
+                        <router-link to="/user/register/">立即注册</router-link>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
+</template>
 <script>
     export default {
-        name: "Login"
+        name: "Login",
+        data(){
+            return{
+                header_list:[],
+                username:'',
+                password:'',
+                token:'',
+                rember:false,
+            }
+        },
+        methods:{
+            get_captcha() {
+                this.$axios({
+                    url: this.$settings.HOST + "user/captcha/",
+                    method: 'get',
+                    params: {
+                        username: this.username
+                    }
+                }).then(res => {
+                    let data = JSON.parse(res.data);
+                    // 获取challenge成功后在前端生成验证码
+                    // 使用initGeetest接口
+                    // 参数1：配置参数
+                    // 参数2：回调，回调的第一个参数验证码对象，之后可以使用它做appendTo之类的事件
+                    initGeetest({
+                        gt: data.gt,
+                        challenge: data.challenge,
+                        product: "popup", // 产品形式，包括：float，embed，popup。注意只对PC版验证码有效
+                        offline: !data.success, // 表示用户后台检测极验服务器是否宕机，一般不需要关注
+                        new_captcha: data.new_captcha
+                    }, this.handlerPopup);
+
+                }).catch(error => {
+                    console.log(error);
+                })
+            },
+
+            // 获取验证码的回调函数  完成验证码验证的
+            handlerPopup(captchaObj) {
+                let self = this;
+                captchaObj.onSuccess(function () {
+                    // 获取验证码对象
+                    let validate = captchaObj.getValidate();
+                    // 当用户滑动滑块后会发送请求校验结果
+                    self.$axios({
+                        url: self.$settings.HOST + "user/captcha/",
+                        method: "post",
+                        data: {
+                            account: self.account,
+                            // password: $('#password1').val(),
+                            geetest_challenge: validate.geetest_challenge,
+                            geetest_validate: validate.geetest_validate,
+                            geetest_seccode: validate.geetest_seccode
+                        },
+                    }).then(res => {
+                        // 验证码校验通过则完成登录
+                        self.user_login()
+
+                    }).catch(error => {
+                        console.log(error);
+                    })
+                });
+                // 在显示验证码之前先将div置为空
+                document.getElementById("geetest1").innerHTML = "";
+                // 显示验证码
+                captchaObj.appendTo("#geetest1");
+            },
+            user_login(){
+                this.$axios({
+                    url:this.$settings.HOST + "user/login/",
+                    method:"post",
+                    data:{
+                        username:this.username,
+                        password:this.password
+                    }
+                }).then(res=>{
+                    console.log(res.data);
+                    sessionStorage.username = this.username;
+                    sessionStorage.token = res.data.token;
+                    if (this.rember){
+                        localStorage.username = this.username;
+                        localStorage.password = this.password;
+                    }
+                    this.$message({
+                        message:"登录成功",
+                        type:"success",
+                        duration:1000,
+                        showClose:true
+                    })
+                    this.$router.push("/home")
+                }).catch(error=>{
+                    console.log(error);
+                    this.$message.success("用户名或密码错误");
+                })
+            },
+        },
+        created() {
+            if (localStorage.username){
+                this.username = localStorage.username
+                this.password = localStorage.password
+            }
+        }
     }
 </script>
 
