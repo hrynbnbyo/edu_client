@@ -8,10 +8,10 @@
             </div>
             <div class="login_box">
                 <div class="title">
-                    <span>密码登录</span>
-                    <span>短信登录</span>
+                    <span @click="flag=0">密码登录</span>
+                    <span @click="flag=1">短信登录</span>
                 </div>
-                <div class="inp" v-if="">
+                <div class="inp" v-show="flag===0">
                     <input type="text" v-model="username" placeholder="用户名 / 手机号码" class="user">
                     <input type="password"  v-model="password" name="" class="pwd" placeholder="密码">
                     <div id="geetest1"></div>
@@ -27,7 +27,7 @@
                         <router-link to="/user/register/">立即注册</router-link>
                     </p>
                 </div>
-                <div class="inp" v-show="">
+                <div class="input" v-show="flag===1">
                     <input type="text" placeholder="手机号码" class="user">
                     <input type="text" class="pwd" placeholder="短信验证码">
                     <button id="get_code" class="btn btn-primary">获取验证码</button>
@@ -49,6 +49,7 @@
                 password:'',
                 token:'',
                 rember:false,
+                flag:0,
             }
         },
         methods:{

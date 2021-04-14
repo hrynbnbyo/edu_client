@@ -32,7 +32,7 @@
                     <div class="login-box full-left">
                         <router-link to="/login"><span>登录</span></router-link>
                         &nbsp;|&nbsp;
-                        <span>注册</span>
+                        <router-link to="/register"><span>注册</span></router-link>
                     </div>
                 </div>
             </div>
