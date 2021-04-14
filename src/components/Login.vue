@@ -27,10 +27,10 @@
                         <router-link to="/user/register/">立即注册</router-link>
                     </p>
                 </div>
-                <div class="input" v-show="flag===1">
-                    <input type="text" placeholder="手机号码" class="user">
-                    <input type="text" class="pwd" placeholder="短信验证码">
-                    <button id="get_code" class="btn btn-primary">获取验证码</button>
+                <div class="inp" v-show="flag===1">
+                    <input type="text" placeholder="手机号码" class="user" v-model="phone">
+                    <input type="text" class="pwd" placeholder="短信验证码" v-model="code">
+                    <button id="get_code" class="btn btn-primary" @click="get_code">获取验证码</button>
                     <button class="login_btn">登录</button>
                     <span class="go_login">没有账号
                         <router-link to="/register">立即注册</router-link>
@@ -47,12 +47,60 @@
             return{
                 username:'',
                 password:'',
+                phone:"",
                 token:'',
+                code:"",
                 rember:false,
                 flag:0,
             }
         },
         methods:{
+            user_register2(){
+                this.$axios({
+                    url:this.$settings.HOST + "user/login/",
+                    method:"post",
+                    data:{
+                        username:this.username,
+                        sms_code:this.code,
+                    }
+                }).then(res=>{
+                    console.log(res.data);
+                    sessionStorage.username = this.username;
+                    sessionStorage.token = res.data.token;
+                    if (this.rember){
+                        localStorage.username = this.username;
+                        localStorage.password = this.password;
+                    }
+                    this.$message({
+                        message:"登录成功",
+                        type:"success",
+                        duration:1000,
+                        showClose:true
+                    })
+                    this.$router.push("/home")
+                }).catch(error=>{
+                    console.log(error);
+                    this.$message.success("用户名或密码错误");
+                })
+            },
+            get_code(){
+                if(!/1[3-9]\d{9}/.test(this.phone)){
+                    this.$alert("手机号格式有误，请确认","警告");
+                    return false;
+                }
+                this.$axios({
+                    url:this.$settings.HOST + "user/message/",
+                    method:'get',
+                    params:{
+                        phone:this.phone
+                    }
+                }).then(res=>{
+                    console.log(res.data)
+                }).catch(error=>{
+                    console.log(error.response)
+                    this.$message.error("发送失败")
+                })
+            },
             get_captcha() {
                 this.$axios({
                     url: this.$settings.HOST + "user/captcha/",

@@ -5,15 +5,14 @@
             <div class="register_box">
                 <div class="register-title">百知教育在线平台注册</div>
                 <div class="inp">
-                    <input v-model="mobile" type="text" placeholder="手机号码" class="user">
+                    <input v-model="phone" type="text" placeholder="手机号码" class="user">
                     <input v-model="password" type="password" placeholder="登录密码" class="user">
                     <div id="geetest"></div>
                     <div class="sms-box">
                         <input v-model="code" type="text" maxlength="6" placeholder="输入验证码" class="user">
-                        <div class="sms-btn">请输入验证码</div>
+                        <div class="sms-btn" @click="get_code">发送验证码</div>
                     </div>
-                    <button class="register_btn" @click="user_register">注册</button>
-                    <p class="go_login">已有账号
+                     <p class="go_login">已有账号
                         <!--                        <router-link to="/login">直接登录</router-link>-->
                         <span>直接登录</span>
                     </p>
@@ -29,14 +28,34 @@
         data() {
             return {
                 sms: "",
-                mobile: "",
                 phone:"",
                 password: "",
+                code:"",
                 is_send_sms: false,// 是否已经发送短信的状态
                 sms_text: "点击发送短信", //发送短信的提示
             }
         },
         methods: {
+            check_phone(){
+            },
+            get_code(){
+                if(!/1[3-9]\d{9}/.test(this.phone)){
+                    this.$alert("手机号格式有误，请确认","警告");
+                    return false;
+                }
+                this.$axios({
+                    url:this.$settings.HOST + "user/message/",
+                    method:'get',
+                    params:{
+                        phone:this.phone
+                    }
+                }).then(res=>{
+                    console.log(res.data)
+                }).catch(error=>{
+                    console.log(error.response)
+                    this.$message.error("发送失败")
+                })
+            },
             user_register() {
               this.$axios({
                   url: this.$settings.HOST + "user/register/",
@@ -44,13 +63,13 @@
                   data:{
                       phone:this.phone,
                       password:this.password,
+                      sms_code:this.code,
                   },
               }).then(res=>{
                   console.log(res.data)
                   sessionStorage.token = res.data.token
                   sessionStorage.username = res.data.username
                   sessionStorage.id = res.data.id
-
                   let self = this;
                   this.$alert("注册成功","百知教育",{
                       callback(){
@@ -60,6 +79,7 @@
 
               }).catch(error=>{
                   console.log(error)
+                  this.$message.error("注册失败");
               })
             },
         }
