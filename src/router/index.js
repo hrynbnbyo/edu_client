@@ -10,8 +10,8 @@ export default new Router({
   routes: [
       {path: "/home" , component: Home},
       {path: "/login" , component: Login},
+      {path: "/register" , component: Register},
       {path: "/" , redirect: "home"},
       {path: "/*" , redirect: "home"},
-      {path: "/register" , component: Register},
   ]
 })
