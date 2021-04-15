@@ -5,16 +5,16 @@
             <div class="register_box">
                 <div class="register-title">百知教育在线平台注册</div>
                 <div class="inp">
-                    <input v-model="phone" type="text" placeholder="手机号码" class="user">
-                    <input v-model="password" type="password" placeholder="登录密码" class="user">
+                    <input v-model="phone" type="text" placeholder="手机号码" class="user" @blur="check_phone">
+                    <input v-model="password" type="password" placeholder="登录密码" class="user" @blur="pwd">
                     <div id="geetest"></div>
                     <div class="sms-box">
-                        <input v-model="code" type="text" maxlength="6" placeholder="输入验证码" class="user">
-                        <div class="sms-btn" @click="get_code">发送验证码</div>
+                        <input v-model="code" type="text" maxlength="6" placeholder="输入验证码" class="user" @blur="check_message">
+                        <div class="sms-btn" @click="get_code">{{ code_text }}</div>
                     </div>
+                    <button class="register_btn" @click="user_register">注册</button>
                      <p class="go_login">已有账号
-                        <!--                        <router-link to="/login">直接登录</router-link>-->
-                        <span>直接登录</span>
+                         <router-link to="/login">直接登录</router-link>
                     </p>
                 </div>
             </div>
@@ -33,27 +33,72 @@
                 code:"",
                 is_send_sms: false,// 是否已经发送短信的状态
                 sms_text: "点击发送短信", //发送短信的提示
+                code_text:"发送验证码",
+                i:60,
             }
         },
         methods: {
-            check_phone(){
+             time60s(){
+                this.i = this.i - 1;
+                this.code_text = this.i
+                console.log(this.i)
+                if (this.i === 0) {
+                    this.code_text = '重新发送'
+                    this.i = 60;
+                    return;
+                }
+                clearTimeout(this.timer);  //清除延迟执行 */
+                this.timer = setTimeout(()=>{   //设置延迟执行
+                    this.time60s()
+                },1000);
+            },
+            check_phone() {
+                let phone = this.phone;
+                let pattern = /^1[356789]\d{9}$/;
+                if (phone === null || phone === "") {
+                    this.$message.error("手机号不能为空")
+                }else if (pattern.test(phone) === false) {
+                    this.$message.error("手机号格式有误")
+                }
+            },
+            pwd() {
+                let user_pwd = this.password;
+                let pattern = /^.*(?=.{8,16})(?=.*\d)(?=.*[A-Z])(?=.*[a-z]).*$/;
+                if (user_pwd === null || user_pwd === "") {
+                    this.$message.error("密码不能为空")
+                } else if (pattern.test(user_pwd) === false) {
+                    this.$message.error("密码格式有误")
+                }
+            },
+            check_message() {
+                let code = this.code;
+                let pattern = /^\d{6}$/;
+                if (code === null || code === "") {
+                    this.$message.error("验证码不能为空")
+                } else if (pattern.test(user_pwd) === false) {
+                    this.$message.error("验证码格式有误")
+                }
             },
             get_code(){
                 if(!/1[3-9]\d{9}/.test(this.phone)){
                     this.$alert("手机号格式有误，请确认","警告");
                     return false;
                 }
+                this.time60s()
                 this.$axios({
                     url:this.$settings.HOST + "user/message/",
                     method:'get',
                     params:{
-                        phone:this.phone
+                        phone:this.phone,
+                        flag:1,
                     }
                 }).then(res=>{
                     console.log(res.data)
+                    this.$message.success(res.data)
                 }).catch(error=>{
                     console.log(error.response)
-                    this.$message.error("发送失败")
+                    console.log(error.response.data)
+                    this.$message.error(error.response.data)
                 })
             },
             user_register() {

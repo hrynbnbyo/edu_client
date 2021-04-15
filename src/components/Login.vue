@@ -8,12 +8,12 @@
             </div>
             <div class="login_box">
                 <div class="title">
-                    <span @click="flag=0">密码登录</span>
-                    <span @click="flag=1">短信登录</span>
+                    <span @click="flag2=0">密码登录</span>
+                    <span @click="flag2=1">短信登录</span>
                 </div>
-                <div class="inp" v-show="flag===0">
-                    <input type="text" v-model="username" placeholder="用户名 / 手机号码" class="user">
-                    <input type="password"  v-model="password" name="" class="pwd" placeholder="密码">
+                <div class="inp" v-show="flag2===0">
+                    <input type="text" v-model="username" placeholder="用户名 / 手机号码" class="user" @blur="check_username">
+                    <input type="password"  v-model="password" name="" class="pwd" placeholder="密码" @blur="pwd">
                     <div id="geetest1"></div>
                     <div class="rember" >
                         <p>
@@ -27,11 +27,11 @@
                         <router-link to="/user/register/">立即注册</router-link>
                     </p>
                 </div>
-                <div class="inp" v-show="flag===1">
-                    <input type="text" placeholder="手机号码" class="user" v-model="phone">
-                    <input type="text" class="pwd" placeholder="短信验证码" v-model="code">
-                    <button id="get_code" class="btn btn-primary" @click="get_code">获取验证码</button>
-                    <button class="login_btn">登录</button>
+                <div class="inp" v-show="flag2===1">
+                    <input type="text" placeholder="手机号码" class="user" v-model="phone" @blur="check_phone">
+                    <input type="text" class="pwd" placeholder="短信验证码" v-model="code" @blur="check_message">
+                    <button id="get_code" class="btn btn-primary" @click="get_code">{{ code_text }}</button>
+                    <button class="login_btn" @click="user_login2">登录</button>
                     <span class="go_login">没有账号
                         <router-link to="/register">立即注册</router-link>
                     </span>
@@ -51,26 +51,71 @@
                 token:'',
                 code:"",
                 rember:false,
-                flag:0,
+                flag2:0,
+                code_text:"发送验证码",
+                i:60,
             }
         },
         methods:{
-            user_register2(){
+            time60s(){
+                this.i = this.i - 1;
+                this.code_text = this.i
+                console.log(this.i)
+                if (this.i === 0) {
+                    this.code_text = '重新发送'
+                    this.i = 60;
+                    return;
+                }
+                clearTimeout(this.timer);  //清除延迟执行 */
+                this.timer = setTimeout(()=>{   //设置延迟执行
+                    this.time60s()
+                },1000);
+            },
+            check_username() {
+                let username = this.name;
+                if (username === null || username === "") {
+                    this.$message.error("用户名不能为空")
+                }
+            },
+            check_phone() {
+                let phone = this.phone;
+                let pattern = /^1[356789]\d{9}$/;
+                if (phone === null || phone === "") {
+                    this.$message.error("手机号不能为空")
+                }else if (pattern.test(phone) === false) {
+                    this.$message.error("手机号格式有误")
+                }
+            },
+            pwd() {
+                let user_pwd = this.password;
+                let pattern = /^.*(?=.{8,16})(?=.*\d)(?=.*[A-Z])(?=.*[a-z]).*$/;
+                if (user_pwd === null || user_pwd === "") {
+                    this.$message.error("密码不能为空")
+                } else if (pattern.test(user_pwd) === false) {
+                    this.$message.error("密码格式有误")
+                }
+            },
+            check_message() {
+                let code = this.code;
+                let pattern = /^\d{6}$/;
+                if (code === null || code === "") {
+                    this.$message.error("验证码不能为空")
+                } else if (pattern.test(user_pwd) === false) {
+                    this.$message.error("验证码格式有误")
+                }
+            },
+            user_login2(){
                 this.$axios({
-                    url:this.$settings.HOST + "user/login/",
+                    url:this.$settings.HOST + "user/login2/",
                     method:"post",
                     data:{
-                        username:this.username,
+                        phone:this.phone,
                         sms_code:this.code,
                     }
                 }).then(res=>{
                     console.log(res.data);
-                    sessionStorage.username = this.username;
+                    sessionStorage.username = res.data.username;
                     sessionStorage.token = res.data.token;
-                    if (this.rember){
-                        localStorage.username = this.username;
-                        localStorage.password = this.password;
-                    }
                     this.$message({
                         message:"登录成功",
                         type:"success",
@@ -80,7 +125,7 @@
                     this.$router.push("/home")
                 }).catch(error=>{
                     console.log(error);
-                    this.$message.success("用户名或密码错误");
+                    this.$message.error(error.response.data);
                 })
             },
             get_code(){
@@ -88,17 +133,20 @@
                     this.$alert("手机号格式有误，请确认","警告");
                     return false;
                 }
+                this.time60s()
                 this.$axios({
                     url:this.$settings.HOST + "user/message/",
                     method:'get',
                     params:{
-                        phone:this.phone
+                        phone:this.phone,
+                        flag:0,
                     }
                 }).then(res=>{
                     console.log(res.data)
+                    this.$message.success("登录成功")
                 }).catch(error=>{
                     console.log(error.response)
-                    this.$message.error("发送失败")
+                    this.$message.error("登录失败")
                 })
             },
             get_captcha() {
@@ -167,7 +215,7 @@
                     }
                 }).then(res=>{
                     console.log(res.data);
-                    sessionStorage.username = this.username;
+                    sessionStorage.username = res.data.username;
                     sessionStorage.token = res.data.token;
                     if (this.rember){
                         localStorage.username = this.username;
@@ -182,7 +230,7 @@
                     this.$router.push("/home")
                 }).catch(error=>{
                     console.log(error);
-                    this.$message.success("用户名或密码错误");
+                    this.$message.error("用户名或密码错误");
                 })
             },
         },
