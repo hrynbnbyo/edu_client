@@ -94,11 +94,11 @@
                     }
                 }).then(res=>{
                     console.log(res.data)
-                    this.$message.success(res.data)
+                    this.$message.success(res.data.msg)
                 }).catch(error=>{
                     console.log(error.response)
-                    console.log(error.response.data)
-                    this.$message.error(error.response.data)
+                    console.log(error.response.data.msg)
+                    this.$message.error(error.response.data.msg)
                 })
             },
             user_register() {

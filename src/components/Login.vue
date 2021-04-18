@@ -20,11 +20,11 @@
                             <input type="checkbox" class="no" v-model="rember"/>
                             <span>记住密码</span>
                         </p>
-                        <p>忘记密码</p>
+                        <router-link to="/check_pwd"><p>忘记密码</p></router-link>
                     </div>
                     <button class="login_btn btn btn-primary" @click="get_captcha">登录</button>
                     <p class="go_login">没有账号
-                        <router-link to="/user/register/">立即注册</router-link>
+                        <router-link to="/register">立即注册</router-link>
                     </p>
                 </div>
                 <div class="inp" v-show="flag2===1">
@@ -100,7 +100,7 @@
                 let pattern = /^\d{6}$/;
                 if (code === null || code === "") {
                     this.$message.error("验证码不能为空")
-                } else if (pattern.test(user_pwd) === false) {
+                } else if (pattern.test(code) === false) {
                     this.$message.error("验证码格式有误")
                 }
             },
@@ -125,7 +125,7 @@
                     this.$router.push("/home")
                 }).catch(error=>{
                     console.log(error);
-                    this.$message.error(error.response.data);
+                    this.$message.error(error.response.data.msg);
                 })
             },
             get_code(){
