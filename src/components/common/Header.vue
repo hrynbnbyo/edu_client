@@ -14,10 +14,10 @@
                 <div class="login-bar full-right" v-if="token">
                     <div class="shop-cart full-left">
                         <img src="/static/image/cart.svg" alt="">
-                        <span><router-link to="/cart">购物车</router-link></span>
+                        <span><router-link to="/cart">{{this.$store.state.cart_length}}购物车</router-link></span>
                     </div>
                     <div class="login-box full-left">
-                       <span>订单</span>
+                       <router-link to="/order_list"><span>订单</span></router-link>
                         &nbsp;|&nbsp;
                         {{username}}，<span @click="clear_session">退出登录</span>
                     </div>
@@ -48,16 +48,19 @@ export default {
             header_list: [],
             token:'',
             username:'',
+            cart_length:0,
         }
     },
     created() {
         this.get_header_list();
+        this.get_cart_length()
         this.token = sessionStorage.token
         this.username = sessionStorage.username
     },
     methods: {
         clear_session(){
             sessionStorage.clear()
+            this.$router.push("/login")
         },
         get_header_list() {
             this.$axios({
@@ -65,6 +68,20 @@ export default {
                 method: 'get',
             }).then(res => {
                 this.header_list = res.data;
+            }).catch(error => {
+                console.log(error);
+            })
+        },
+        get_cart_length(){
+            let token = sessionStorage.token
+            this.$axios.post(this.$settings.HOST + "cart/option2/", {}, {
+                headers: {
+                    "Authorization": "jwt " + token
+                }
+            }).then(res => {
+                this.cart_length = res.data.cart_length;
+                console.log(res.data);
+                this.$store.commit("change_count",this.cart_length)
             }).catch(error => {
                 console.log(error);
             })

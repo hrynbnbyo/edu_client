@@ -1,6 +1,6 @@
 <template>
     <div class="login box">
-        <img src="../../static/image/03.png" alt="">
+        <img src="../../static/image/back.jpg" alt="">
         <div class="login">
             <div class="login-title">
                 <img src="../../static/image/logo.png" alt="">
@@ -8,8 +8,8 @@
             </div>
             <div class="login_box">
                 <div class="title">
-                    <span @click="flag2=0">密码登录</span>
-                    <span @click="flag2=1">短信登录</span>
+                    <span :class="flag2===0?'a':'b'" @click="flag2=0">密码登录</span>
+                    <span :class="flag2===1?'a':'b'" @click="flag2=1">短信登录</span>
                 </div>
                 <div class="inp" v-show="flag2===0">
                     <input type="text" v-model="username" placeholder="用户名 / 手机号码" class="user" @blur="check_username">
@@ -116,6 +116,7 @@
                     console.log(res.data);
                     sessionStorage.username = res.data.username;
                     sessionStorage.token = res.data.token;
+                    sessionStorage.id = res.data.user_id;
                     this.$message({
                         message:"登录成功",
                         type:"success",
@@ -217,9 +218,13 @@
                     console.log(res.data);
                     sessionStorage.username = res.data.username;
                     sessionStorage.token = res.data.token;
+                    sessionStorage.id = res.data.user_id;
                     if (this.rember){
                         localStorage.username = this.username;
                         localStorage.password = this.password;
+                    }else{
+                        localStorage.removeItem("username")
+                        localStorage.removeItem("password")
                     }
                     this.$message({
                         message:"登录成功",
@@ -238,6 +243,8 @@
             if (localStorage.username){
                 this.username = localStorage.username
                 this.password = localStorage.password
+                this.rember = true
+
             }
         }
     }
@@ -309,10 +316,16 @@
         cursor: pointer;
     }
 
-    .login_box .title span:nth-of-type(1) {
+    /*.login_box .title span:nth-of-type(1) {*/
+    /*    !*color: #4a4a4a;*!*/
+    /*    border-bottom: 2px solid #84cc39;*/
+    /*}*/
+
+    .login_box .title .a {
         color: #4a4a4a;
         border-bottom: 2px solid #84cc39;
     }
+
 
     .inp {
         width: 350px;

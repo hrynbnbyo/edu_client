@@ -1,6 +1,6 @@
 <template>
     <div class="box">
-        <img src="../../static/image/02.png" alt="">
+        <img src="../../static/image/back.jpg" alt="">
         <div class="register">
             <div class="register_box">
                 <div class="register-title">百知教育在线平台注册</div>
@@ -96,8 +96,9 @@
                     console.log(res.data)
                     this.$message.success(res.data.msg)
                 }).catch(error=>{
-                    console.log(error.response)
-                    console.log(error.response.data.msg)
+                    console.log(error)
+                    // console.log(error.response)
+                    // console.log(error.response.data.msg)
                     this.$message.error(error.response.data.msg)
                 })
             },

@@ -16,17 +16,20 @@
                         <li class="hot"  @click="change_order_type('students')" :class="change_order_class('students')">人气</li>
                         <li class="price"  @click="change_order_type('price')" :class="change_order_class('price')">价格</li>
                     </ul>
-                    <p class="condition-result">共21个课程</p>
+                    <p class="condition-result">共{{total}}个课程</p>
                 </div>
             </div>
             <!-- 课程列表 -->
             <div class="course-list">
                 <div class="course-item" v-for="(value,index) in course_list" :key="value.id">
                     <div class="course-image">
-                        <img :src="value.coruse_img" alt="">
+                        <img :src="value.course_img" alt="">
                     </div>
                     <div class="course-info">
-                        <h3>{{value.name}} <span><img src="/static/image/01.png" alt="">{{value.students}}</span></h3>
+                        <h3>
+                            <router-link :to="'/detail/' + value.id">{{value.name}}</router-link>
+                            <span><img src="/static/image/avatar1.svg" alt="">{{value.students}}</span>
+                        </h3>
                         <p class="teather-info">{{ value.teacher['name'] }}   {{value.teacher['title']}}<span>共{{value.lessons}}课时/{{value.lessons===value.pub_lessons?'更新完成':`已更新${value.pub_lessons}课时`}}</span></p>
                         <ul class="lesson-list">
                             <li v-for="(lesson,index) in value.lesson_list">
@@ -35,9 +38,9 @@
                             </li>
                         </ul>
                         <div class="pay-box">
-                            <span class="discount-type">限时免费</span>
-                            <span class="discount-price">￥0.00元</span>
-                            <span class="original-price">原价：{{ value.price }}元</span>
+                            <span class="discount-type" v-if="value.discount_name">{{value.discount_name}}</span>
+                            <span class="discount-price" v-if="value.discount_name">￥{{ value.real_price }}元</span>
+                            <span :class="value.discount_name.length > 0?'original-price':'discount-price'">原价：{{ value.price }}元</span>
                             <span class="buy-now">立即购买</span>
                         </div>
                     </div>
@@ -47,7 +50,7 @@
         <el-pagination
             background
             :page-size="filters.size"
-            @current-page="change_page"
+            @current-change="change_page"
             @size-change="size_change"
             :page-sizes="[2,3,5,10]"
             layout="prev, pager, next, sizes"
@@ -94,7 +97,8 @@ export default {
             this.get_course_list();
         },
         change_page(page){
-            //修改页码
+            // 修改页码
+            console.log(page);
             this.filters.page = page;
             this.get_course_list();
         },
@@ -131,8 +135,8 @@ export default {
         },
         get_course_list(){
             let filters = {
-                page:this.filters.page,
-                size:this.filters.size,
+                page: this.filters.page,
+                size: this.filters.size,
             };
             // 分类
             if (this.category > 0){
@@ -148,10 +152,11 @@ export default {
             this.$axios.get(this.$settings.HOST + 'course/course_list/', {
                 params:filters
             }).then(res => {
-                console.log(res.data)
-                this.course_list = res.data.result;
-                console.log(this.course_list);
+                console.log(res.data,111)
+                this.course_list = res.data.results;
+                console.log(this.course_list)
                 this.total = res.data.count;
+                console.log(this.total)
             }).catch(error => {
                 console.log(error);
             })
